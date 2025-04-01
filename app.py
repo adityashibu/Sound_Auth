@@ -2,7 +2,6 @@ import streamlit as st
 import ggwave
 import pyaudio
 
-# Function to play the waveform using PyAudio
 def play_audio(waveform):
     p = pyaudio.PyAudio()
 
@@ -13,45 +12,48 @@ def play_audio(waveform):
 
     p.terminate()
 
-# Streamlit UI elements
-st.title("GGWave Audio Encoder")
+st.sidebar.title("GGWave Audio Encoder/Decoder")
+mode = st.sidebar.radio("Select Mode", ["Encode", "Decode"])
 
-# Input from the user (text to encode)
-input_text = st.text_input("Enter text to encode:", "hello python")
+st.title("GGWave Audio Encoder/Decoder")
 
-# Slider to adjust volume
-volume = st.slider("Select volume level:", min_value=1, max_value=100, value=20)
+if mode == "Encode":
+    input_text = st.text_input("Enter text to encode:", "hello python")
 
-# Dropdown to select Tx protocol
-protocol_options = {
-    0: "Normal",
-    1: "Fast",
-    2: "Fastest",
-    3: "[U] Normal",
-    4: "[U] Fast",
-    5: "[U] Fastest",
-    6: "[DT] Normal",
-    7: "[DT] Fast",
-    8: "[DT] Fastest",
-    9: "[MT] Normal",
-    10: "[MT] Fast",
-    11: "[MT] Fastest"
-}
+    volume = st.slider("Select volume level:", min_value=1, max_value=100, value=20)
 
-# Display the protocol selection dropdown
-protocol_choice = st.selectbox("Select Tx protocol:", list(protocol_options.values()))
+    protocol_options = {
+        0: "Normal",
+        1: "Fast",
+        2: "Fastest",
+        3: "[U] Normal",
+        4: "[U] Fast",
+        5: "[U] Fastest",
+        6: "[DT] Normal",
+        7: "[DT] Fast",
+        8: "[DT] Fastest",
+        9: "[MT] Normal",
+        10: "[MT] Fast",
+        11: "[MT] Fastest"
+    }
 
-# Map the selected protocol string to protocol ID
-protocol_id = list(protocol_options.keys())[list(protocol_options.values()).index(protocol_choice)]
+    protocol_choice = st.selectbox("Select Tx protocol:", list(protocol_options.values()))
 
-# Button to encode and play the audio
-if st.button("Play Encoded Audio"):
-    if input_text:
-        # Encode the input text to audio waveform with selected protocol
-        waveform = ggwave.encode(input_text, protocolId=protocol_id, volume=volume)
-        
-        # Play the audio
-        st.write(f"Transmitting text: '{input_text}' with protocol: {protocol_choice}")
-        play_audio(waveform)
-    else:
-        st.warning("Please enter some text to encode.")
+    # Map the selected protocol string to protocol ID
+    protocol_id = list(protocol_options.keys())[list(protocol_options.values()).index(protocol_choice)]
+
+    if st.button("Play Encoded Audio"):
+        if input_text:
+            waveform = ggwave.encode(input_text, protocolId=protocol_id, volume=volume)
+            
+            st.write(f"Transmitting text: '{input_text}' with protocol: {protocol_choice}")
+            play_audio(waveform)
+        else:
+            st.warning("Please enter some text to encode.")
+
+elif mode == "Decode":
+    uploaded_file = st.file_uploader("Upload an audio file to decode", type=["wav", "mp3"])
+    
+    if uploaded_file:
+        st.write(f"Decoding audio from file: {uploaded_file.name}")
+        st.warning("Audio decoding functionality is not yet implemented.")
